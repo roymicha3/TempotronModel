@@ -1,6 +1,9 @@
+from plots.GraphPlot import GraphPlot
+
 def main():
-    print("hello world\n")
     
-    
+    plotter = GraphPlot();
+    plotter.plot_input_layer_output()
+        
 if __name__ == '__main__':
     main()
