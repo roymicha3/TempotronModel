@@ -28,7 +28,7 @@ class SimpleTempotron:
         T = 500,
         time_step = 0.1,
         beta = 1,
-        epoch_size = 64,
+        epoch_size = 128,
         k = 10,
         hidden_layer_size = 100,
         firing_rate = 50):
@@ -77,7 +77,7 @@ class SimpleTempotron:
         progress = 0
         accuracy = 0
         val_accuracy = 0
-        validation_size = 200
+        validation_size = 250
         
         x_val, y_val = self.data_loader.load_test_batch(validation_size)
         x_val = self.encoder.encode(x_val)
@@ -107,7 +107,7 @@ class SimpleTempotron:
                 # self.hidden_layer.step(grad)
                 
                 epoch_loss += loss
-                
+                    
             # delta = self.optimizer.step(epoch_grad / self.epoch_size)
             # self.weights += delta
 
@@ -152,3 +152,21 @@ class SimpleTempotron:
         
     def load(self, dir_path):
         self.output_layer.load(dir_path, 0)
+        
+    def summerize(self):
+        summary = {}
+        
+        summary["weights"] = self.output_layer.weights
+        summary["num_of_iterations"] = len(self.val_accuracies)
+        summary["validation_accuracies"] = self.val_accuracies
+        summary["test_accuracies"] = self.accuracies
+        summary["tau"] = self.tau
+        summary["T"] = self.T
+        summary["time_step"] = self.time_step
+        summary["beta"] = self.beta
+        summary["epoch_size"] = self.epoch_size
+        
+        dir_path = make_directory(prefix="Tempotron-summary")
+        dict_path = dir_path + "\\output_summary" + ".npy"
+        np.save(dict_path, summary)
+        

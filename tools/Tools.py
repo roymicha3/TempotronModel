@@ -34,10 +34,10 @@ def get_conv_idx(matrix_shape: tuple, window: np.array):
 def get_non_zero_idx(data: np.array):
     return np.nonzero(data).T
 
-def make_directory(directory = None):
+def make_directory(directory = None, prefix = "Tempotron-weights"):
     
     if directory is None:
-        directory = generate_dir_name()
+        directory = generate_dir_name(prefix=prefix)
     
     # Parent Directory path
     parent_dir = "C:\\Users\\roymi\\Projects\\TempotronModel\\weights"
@@ -49,12 +49,12 @@ def make_directory(directory = None):
     
     return path
     
-def generate_dir_name():
+def generate_dir_name(prefix):
     current_datetime = datetime.now()
     print("Current date & time : ", current_datetime)
     
     # convert datetime obj to string
-    str_current_datetime = "Tempotron-weights" + str(current_datetime).replace(' ', '_')
+    str_current_datetime = prefix + str(current_datetime).replace(' ', '_')
 
     return str_current_datetime.replace(':', '-')
     

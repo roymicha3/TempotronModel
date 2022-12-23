@@ -2,8 +2,8 @@ from plots.GraphPlot import GraphPlot
 
 def main():
     
-    plotter = GraphPlot();
-    plotter.plot_input_layer_output()
+    plotter = GraphPlot(T=500);
+    plotter.plot_perceptron_tempotron_comparison()
         
 if __name__ == '__main__':
     main()

@@ -5,6 +5,7 @@ from data_loader.DataLoader import DataLoader
 from encoders.RateEncoder import RateEncoder
 from layers.InputLayer import InputLayer
 from models.Tempotron import SimpleTempotron
+from models.Perceptron import Perceptron
 
 class GraphPlot:
     
@@ -122,16 +123,15 @@ class GraphPlot:
         
     def plot_model_validation(self):
         tau = 2.164
-        max_iterations = 2
+        max_iterations = 1000
         presynaptic_num = 784
-        weights = np.random.rand(presynaptic_num, 10)
 
-        model = SimpleTempotron(presynaptic_num ,weights.copy(), tau = tau, T= self.T)
+        model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)
         
         # model.train(x_train, y_train, learning_rate, max_iterations=max_iterations)
         model.load("C:\\Users\\roymi\\Projects\\TempotronModel\\weights\\Tempotron-weights2022-12-17_21-07-03.587629")
 
-        model.train_and_validate(max_iterations = max_iterations)
+        model.train_and_validate(max_iterations = max_iterations, save_progress=True)
 
         plt.figure("num of iterations validation")
         plt.xlabel("num of iterations")
@@ -142,3 +142,26 @@ class GraphPlot:
         plt.legend()
         plt.show()
         
+    def plot_perceptron_tempotron_comparison(self):
+        
+        tau = 2.164
+        max_iterations = 200
+        presynaptic_num = 784
+
+        tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)
+        perceptron_model = Perceptron(784, 10)
+        
+        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=False)
+        tempotron_model.summerize()
+        
+        perceptron_model.train(max_iterations = max_iterations)
+        perceptron_model.summerize()
+        
+        plt.figure("num of iterations validation - Perceptron vs Tempotron")
+        plt.xlabel("num of iterations")
+        plt.ylabel("accuracy")
+        plt.plot(range(len(perceptron_model.val_accuracies)), perceptron_model.val_accuracies, label="perceptron accuracy")
+        plt.plot(range(len(tempotron_model.val_accuracies)), tempotron_model.val_accuracies, label="temportron accuracy")
+
+        plt.legend()
+        plt.show()

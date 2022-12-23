@@ -16,6 +16,12 @@ class DataLoader:
         
         #shuffle data
         indices = np.arange(train_size)
+        
+        while True:
+            batch_indices = np.random.choice(indices, self.batch_size)
+            yield self.x_train[batch_indices], self.y_train[batch_indices]
+            
+        # old function:
         if self.shuffle:
             np.random.shuffle(indices)
         
@@ -31,3 +37,7 @@ class DataLoader:
             np.random.shuffle(indices)
         
         return self.x_test[indices[: batch_size]], self.y_test[indices[: batch_size]]
+    
+    def load_test(self):
+        
+        return self.x_test, self.y_test
