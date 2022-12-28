@@ -4,8 +4,10 @@ import numpy as np
 from data_loader.DataLoader import DataLoader
 from encoders.RateEncoder import RateEncoder
 from layers.InputLayer import InputLayer
+from layers.Kernel import Kernel
 from models.Tempotron import SimpleTempotron
 from models.Perceptron import Perceptron
+from tools.Tracker import Tracker
 
 class GraphPlot:
     
@@ -47,45 +49,36 @@ class GraphPlot:
         plt.show()
         
     def plot_input_layer_output(self):
-        tau     = 2.164
-        v0 = 1
-        presynaptic_num = 784
-        firing_rate = 50
+        tau                 = 2.164
+        v0                  = 1
+        presynaptic_num     = 784
+        firing_rate         = 50
         
         loader = self.data_loader.load_batch()
         data, _ = next(loader)
         
-        layer = InputLayer(self.T, self.time_step, input_size = 784, v0 = v0, tau = tau)
+        kernel = Kernel(self.T, self.time_step, input_size = presynaptic_num, v0 = v0, tau = tau)
         
-        spike_timings = self.encoder.encode(data)
+        spike_timings = self.encoder.encode_new(data)
         
-        output_voltage = layer(spike_timings)
+        output_voltage = kernel.get_voltage(spike_timings[0])
         
-        indices = np.argwhere(np.max(output_voltage[0, :, :], axis=0) > 0)[:, 0]
+        indices = np.argwhere(np.max(output_voltage, axis=1) > 0)[:, 0]
         np.random.shuffle(indices)
         
-        # Initialise the subplot function using number of rows and columns
-        figure, axis = plt.subplots(2, 2)
+        cols = 3
+        rows = 3
+        
+        figure, axis = plt.subplots(rows, cols)
         
         t = np.arange(0, int(self.T / self.time_step), 1)
-
-        voltage = output_voltage[0, :, indices[0]]
-        axis[0, 0].plot(t, voltage)
-        axis[0, 0].set_title("input voltage - random neuron #1")
-
-        voltage = output_voltage[0, :, indices[1]]
-        axis[0, 1].plot(t, voltage)
-        axis[0, 1].set_title("input voltage - random neuron #2")
-
-        voltage = output_voltage[0, :, indices[2]]
-        axis[1, 0].plot(t, voltage)
-        axis[1, 0].set_title("input voltage - random neuron #3")
-
-        voltage = output_voltage[0, :, indices[3]]
-        axis[1, 1].plot(t, voltage)
-        axis[1, 1].set_title("input voltage - random neuron #4")
         
-        # Combine all the operations and display
+        for i in range(rows):
+            for j in range(cols):
+                voltage = output_voltage[indices[i * cols + j]]
+                axis[i, j].plot(t, voltage)
+                axis[i, j].set_title("input voltage - random neuron #" + str(i * cols + j))
+
         plt.show()
         
     def plot_output_layer_output(self):
@@ -145,17 +138,15 @@ class GraphPlot:
     def plot_perceptron_tempotron_comparison(self):
         
         tau = 2.164
-        max_iterations = 200
+        max_iterations = 500
         presynaptic_num = 784
 
         tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)
         perceptron_model = Perceptron(784, 10)
         
-        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=False)
-        tempotron_model.summerize()
+        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=True)
         
         perceptron_model.train(max_iterations = max_iterations)
-        perceptron_model.summerize()
         
         plt.figure("num of iterations validation - Perceptron vs Tempotron")
         plt.xlabel("num of iterations")
@@ -165,3 +156,22 @@ class GraphPlot:
 
         plt.legend()
         plt.show()
+        
+    def train_in_parts(self):
+        tau = 2.164
+        max_iterations = 2
+        presynaptic_num = 784
+
+        tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)
+        
+        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=True)
+        tempotron_model.track()
+        
+        tracker = Tracker(dir_path = tempotron_model.tracker.directory_path())
+        
+        tempotron_model = SimpleTempotron(presynaptic_num ,tracker = tracker)
+        tempotron_model.load()
+        
+        max_iterations = 5
+        
+        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=True)

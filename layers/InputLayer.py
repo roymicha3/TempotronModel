@@ -1,6 +1,7 @@
 import numpy as np
 
 from tools.Tools import heaviside, numeric_integral
+from layers.Kernel import Kernel
 
 class InputLayer:
     
@@ -11,6 +12,7 @@ class InputLayer:
         self.v0         =    v0
         self.tau        =    tau
         self.tau_s      =    tau / 4
+        self.kernel     =    Kernel(T, time_step=time_step, input_size=input_size, v0=v0, tau=tau)
     
     def __call__(self, data : list) -> np.array:
         num_of_samples = len(data)
@@ -19,7 +21,7 @@ class InputLayer:
 
         # create full x_val matrix (all the input presynaptic neurons voltages)
         for sample_index in range(num_of_samples):
-            res[sample_index, :, :] = self.get_voltage_from_spike_timings(data[sample_index])
+            res[sample_index, :, :] = self.kernel.get_voltage(data[sample_index]).T
             
         return res
     

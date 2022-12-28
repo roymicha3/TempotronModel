@@ -15,6 +15,7 @@ from layers.InputLayer import InputLayer
 from layers.HiddenLayer import HiddenLayer
 from loss.CrossEntropy import CrossEntropy
 from layers.OutputLayer import OutputLayer
+from tools.Tracker import Tracker
 
 class SimpleTempotron:
 
@@ -31,7 +32,8 @@ class SimpleTempotron:
         epoch_size = 128,
         k = 10,
         hidden_layer_size = 100,
-        firing_rate = 50):
+        firing_rate = 50,
+        tracker = None):
 
         self.n              =           number_of_presynaptic
         self.k              =           k
@@ -46,6 +48,13 @@ class SimpleTempotron:
         self.epoch_size     =           epoch_size
         self.accuracies     =           []
         self.val_accuracies =           []
+        self.iterations     =           0
+        self.track_period   =           20
+        
+        if tracker is None:
+            self.tracker    =           Tracker()
+        else:
+            self.tracker    =           tracker
         
         self.data_loader    =           DataLoader(epoch_size, shuffle=True)
         self.encoder        =           RateEncoder(T, time_step, number_of_presynaptic, firing_rate=firing_rate)
@@ -56,15 +65,6 @@ class SimpleTempotron:
         # self.hidden_layer   =           HiddenLayer(T, time_step, input_size=number_of_presynaptic, output_size = hidden_layer_size, weights = hidden_weights)
         
         self.output_layer   =           OutputLayer(T = T, time_step = time_step, input_size = number_of_presynaptic, output_size = k, weights = None, loss=CrossEntropy((number_of_presynaptic, k), beta = beta))
-
-    def k_function(self, ti):
-        n = self.T
-        t = np.arange(n) * self.time_step
-
-        res = heaviside(self.time_step, ti, self.T) * (t - ti)
-        res  = self.v0 * ( np.exp(-res / self.tau) - np.exp(-res / self.tau_s))
-
-        return res
 
     def get_accuracy(self, samples, labels):
 
@@ -80,18 +80,23 @@ class SimpleTempotron:
         validation_size = 250
         
         x_val, y_val = self.data_loader.load_test_batch(validation_size)
-        x_val = self.encoder.encode(x_val)
+        x_val = self.encoder.encode_new(x_val)
         x_val = self.input_layer(x_val)
         
         train_data_generator = self.data_loader.load_batch()
+        
+        assert(self.iterations < max_iterations)
 
-        for epoch in range(max_iterations):
+        for epoch in range(self.iterations, max_iterations):
             
             x_train, y_train = next(train_data_generator)
-            x_train = self.encoder.encode(x_train)
+            x_train = self.encoder.encode_new(x_train)
             x_train = self.input_layer(x_train)
 
             progress = int((epoch / max_iterations) * 100)
+            
+            if save_progress and epoch % self.track_period == 0:
+                self.track()
 
             epoch_loss = 0
 
@@ -117,7 +122,7 @@ class SimpleTempotron:
             self.accuracies.append(accuracy)
             self.val_accuracies.append(val_accuracy)
 
-            print('Epoch {}. loss: {}. train accuracy: {}. val accuracy: {}'.format(epoch, epoch_loss, accuracy, val_accuracy))
+            print(f'Epoch {epoch}. loss: {epoch_loss}. train accuracy: {accuracy}. val accuracy: {val_accuracy}')
             print('[' + '#' * progress + '.' * (100 - progress) + ']')
 
             # TODO: might cause trouble, dont erase just yet
@@ -126,9 +131,6 @@ class SimpleTempotron:
 
         print("the training accuracy is: " + str(accuracy))
         print("the validation accuracy is: " + str(val_accuracy))
-        
-        if save_progress:
-            self.save()
         
     def get_output(self, data : np.array):
         encoded_data = self.encoder.encode(data)
@@ -144,16 +146,21 @@ class SimpleTempotron:
         # predicted_labels = np.max(samples @ self.weights, axis=1) >= self.v_threshold
         # labels = np.array([1 if label else -1 for label in predicted_labels])
         return output
-    
-    def save(self):
-        dir_path = make_directory()
         
-        self.output_layer.save(dir_path, 0)
+    def load(self):
+        summary = self.tracker.load()
         
-    def load(self, dir_path):
-        self.output_layer.load(dir_path, 0)
+        self.output_layer.weights   = summary["weights"]
+        self.iterations             = summary["num_of_iterations"]
+        self.val_accuracies         = summary["validation_accuracies"]
+        self.accuracies             = summary["test_accuracies"]
+        self.tau                    = summary["tau"]
+        self.T                      = summary["T"]
+        self.time_step              = summary["time_step"]
+        self.beta                   = summary["beta"]
+        self.epoch_size             = summary["epoch_size"]
         
-    def summerize(self):
+    def track(self):
         summary = {}
         
         summary["weights"] = self.output_layer.weights
@@ -166,7 +173,6 @@ class SimpleTempotron:
         summary["beta"] = self.beta
         summary["epoch_size"] = self.epoch_size
         
-        dir_path = make_directory(prefix="Tempotron-summary")
-        dict_path = dir_path + "\\output_summary" + ".npy"
-        np.save(dict_path, summary)
+        self.tracker.save(summary=summary)
+        print("progress saved! \n")
         
