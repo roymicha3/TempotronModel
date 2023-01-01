@@ -6,16 +6,20 @@ from scipy.special import softmax
 import sys
  
 # adding tools folder to the system path
-from tools.Tools import heaviside, numeric_integral, make_directory
-from data_loader.DataLoader import DataLoader
+from tools.Tools import heaviside, numeric_integral
 from tools.Optimizers import AdamOptimizer
+from tools.Tracker import Tracker
+
+from data_loader.DataLoader import DataLoader
 from data_loader.DataLoader import DataLoader
 from encoders.RateEncoder import RateEncoder
+
+from loss.CrossEntropy import CrossEntropy
+
 from layers.InputLayer import InputLayer
 from layers.HiddenLayer import HiddenLayer
-from loss.CrossEntropy import CrossEntropy
 from layers.OutputLayer import OutputLayer
-from tools.Tracker import Tracker
+
 
 class SimpleTempotron:
 
@@ -77,7 +81,7 @@ class SimpleTempotron:
         progress = 0
         accuracy = 0
         val_accuracy = 0
-        validation_size = 250
+        validation_size = 500
         
         x_val, y_val = self.data_loader.load_test_batch(validation_size)
         x_val = self.encoder.encode_new(x_val)

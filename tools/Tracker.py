@@ -1,7 +1,8 @@
 import numpy as np
 
-from tools.Tools import make_directory
+from tools.FileManager import make_directory
 
+# TODO: add automatic check for former session by checking if a directory exist - and if so, load the progress...
 class Tracker:
     
     def __init__(self, prefix="SUMMERY", dir_path=None) -> None:

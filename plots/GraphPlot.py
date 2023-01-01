@@ -138,7 +138,7 @@ class GraphPlot:
     def plot_perceptron_tempotron_comparison(self):
         
         tau = 2.164
-        max_iterations = 500
+        max_iterations = 1500
         presynaptic_num = 784
 
         tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)

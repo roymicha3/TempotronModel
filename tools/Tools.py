@@ -1,7 +1,6 @@
 import numpy as np
 import random
 import os
-from datetime import datetime
 from scipy.signal import convolve2d
 
 def heaviside(time_step, time_cutoff, n):
@@ -33,28 +32,3 @@ def get_conv_idx(matrix_shape: tuple, window: np.array):
 
 def get_non_zero_idx(data: np.array):
     return np.nonzero(data).T
-
-def make_directory(directory = None, prefix = "Tempotron-weights"):
-    
-    if directory is None:
-        directory = generate_dir_name(prefix=prefix)
-    
-    # Parent Directory path
-    parent_dir = "C:\\Users\\roymi\\Projects\\TempotronModel\\weights"
-
-    path = os.path.join(parent_dir, directory)
-
-    os.mkdir(path)
-    print("Directory '% s' created" % directory)
-    
-    return path
-    
-def generate_dir_name(prefix):
-    current_datetime = datetime.now()
-    print("Current date & time : ", current_datetime)
-    
-    # convert datetime obj to string
-    str_current_datetime = prefix + str(current_datetime).replace(' ', '_')
-
-    return str_current_datetime.replace(':', '-')
-    

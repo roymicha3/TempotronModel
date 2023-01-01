@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.special import softmax
 
-from tools.Tools import make_directory
 from tools.Optimizers import AdamOptimizer
 from data_loader.DataLoader import DataLoader
 from encoders.FlattenEncoder import FlattenEncoder
@@ -77,15 +76,15 @@ class Perceptron:
             print(f'Epoch {epoch}. loss: {loss}. test accuracy {accuracy}. val accuracy: {val_accuracy}')
             print('[' + '#' * progress + '.' * (100 - progress) + ']')
             
-    def summerize(self):
-        summary = {}
+    # def summerize(self):
+    #     summary = {}
         
-        summary["weights"] = self.weights
-        summary["num_of_iterations"] = len(self.val_accuracies)
-        summary["validation_accuracies"] = self.val_accuracies
-        summary["test_accuracies"] = self.accuracies
-        summary["epoch_size"] = self.epoch_size
+    #     summary["weights"] = self.weights
+    #     summary["num_of_iterations"] = len(self.val_accuracies)
+    #     summary["validation_accuracies"] = self.val_accuracies
+    #     summary["test_accuracies"] = self.accuracies
+    #     summary["epoch_size"] = self.epoch_size
         
-        dir_path = make_directory(prefix="Perceptron-summary")
-        dict_path = dir_path + "\\output_summary" + ".npy"
-        np.save(dict_path, summary)
+    #     dir_path = make_directory(prefix="Perceptron-summary")
+    #     dict_path = dir_path + "\\output_summary" + ".npy"
+    #     np.save(dict_path, summary)
