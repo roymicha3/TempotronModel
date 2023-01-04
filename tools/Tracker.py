@@ -1,30 +1,50 @@
 import numpy as np
+import os
 
-from tools.FileManager import make_directory
+MAX_TAGS = 100
 
 # TODO: add automatic check for former session by checking if a directory exist - and if so, load the progress...
 class Tracker:
     
-    def __init__(self, prefix="SUMMERY", dir_path=None) -> None:
+    def __init__(self, prefix="SESSION", tag=None) -> None:
         
-        if dir_path is None:
-            self.dir_path   =   make_directory(prefix=prefix)
-        else:
-            self.dir_path   =   dir_path
+        self.dir_path       =   ".\\results\\models\\"
+        
+        if not os.path.exists(self.dir_path):
+            os.makedirs(self.dir_path)
+            print("Directory '% s' created" % self.dir_path)
             
-        self.file_name      =   "output_summary.npy"
+        if tag is None:
+            tag = self.get_tag(self.dir_path, prefix)
+            print(f"created a new tag: {tag} \n")
+        
+        self.file_name      =   prefix + f"-{tag}.npy"
+        self.file_path      =   os.path.join(self.dir_path + self.file_name)
         
     def save(self, summary : dict):
-        dict_path = self.dir_path + "\\" + self.file_name
-        np.save(dict_path, summary)
+        np.save(self.file_path, summary)
         
     def load(self):
-        dict_path = self.dir_path + "\\" + self.file_name
-        summary = np.load(dict_path, allow_pickle=True)
+        summary = np.load(self.file_path, allow_pickle=True)
         return summary.item()
     
-    def file_path(self):
-        return self.dir_path + "\\" + self.file_name
+    def get_file_path(self):
+        return self.file_path
     
-    def directory_path(self):
+    def get_directory_path(self):
         return self.dir_path
+    
+    def session_exist(self):
+        return os.path.exists(self.file_path)
+    
+    def get_tag(self, dir_path, prefix):
+        # if the naming is changed, we need to remember to chage it here as well!
+        for tag in range(MAX_TAGS):
+            file_name      =   prefix + f"-{tag}.npy"
+            file_path      =   os.path.join(dir_path + file_name)
+            
+            if (not os.path.exists(file_path)):
+                return tag
+            
+        print("didnt fing a vacant tag! \n")
+        assert(False)

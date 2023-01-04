@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+
 def get_full_path(relative_path : str) -> str:
     absolute_path = os.path.dirname(__file__)
     absolute_path = os.path.join(absolute_path, "..\\results")
@@ -8,14 +9,14 @@ def get_full_path(relative_path : str) -> str:
     
     return full_path
 
-def make_directory(directory = None, prefix = "RESULTS", session_code = None):
+def make_directory(directory = None, prefix = "RESULTS", tag = None):
     
     if directory is None:
-        if session_code is None:
+        if tag is None:
             directory = generate_dir_name(prefix=prefix)
             
         else:
-            directory = get_dir_name(prefix, session_code)
+            directory = get_dir_name(prefix, tag)
 
     path = get_full_path(directory)
 
@@ -34,14 +35,26 @@ def generate_dir_name(prefix):
 
     return dir_name
 
-def get_dir_name(prefix, session_code):
+def generate_tag():
+    pass
+
+def get_dir_name(prefix, tag):
     
-    dir_name = prefix + session_code
+    dir_name = prefix + tag
 
     return dir_name
 
-def is_dir_exist(prefix, session_code):
-    dir_name = get_dir_name(prefix, session_code)
+def is_dir_exist(prefix, tag):
+    dir_name = get_dir_name(prefix, tag)
     path = get_full_path(dir_name)
     
     return os.path.exists(path)
+
+def get_checkpoint_dir(epoch, tag=''):
+    models_path = "../raw/models"
+    
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
+    
+    filename = os.path.join(models_path + f"/{tag}-checkpoint-{epoch}.npy")
+    return filename

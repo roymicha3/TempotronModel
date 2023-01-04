@@ -37,7 +37,7 @@ class SimpleTempotron:
         k = 10,
         hidden_layer_size = 100,
         firing_rate = 50,
-        tracker = None):
+        tag = None):
 
         self.n              =           number_of_presynaptic
         self.k              =           k
@@ -53,12 +53,9 @@ class SimpleTempotron:
         self.accuracies     =           []
         self.val_accuracies =           []
         self.iterations     =           0
-        self.track_period   =           20
+        self.checkpoint     =           20
         
-        if tracker is None:
-            self.tracker    =           Tracker()
-        else:
-            self.tracker    =           tracker
+        self.tracker        =           Tracker(tag=tag)
         
         self.data_loader    =           DataLoader(epoch_size, shuffle=True)
         self.encoder        =           RateEncoder(T, time_step, number_of_presynaptic, firing_rate=firing_rate)
@@ -99,7 +96,7 @@ class SimpleTempotron:
 
             progress = int((epoch / max_iterations) * 100)
             
-            if save_progress and epoch % self.track_period == 0:
+            if save_progress and epoch % self.checkpoint == 0:
                 self.track()
 
             epoch_loss = 0

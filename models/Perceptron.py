@@ -8,16 +8,17 @@ from encoders.FlattenEncoder import FlattenEncoder
 class Perceptron:
     
     def __init__(self, input_size, output_size):
-        self.weights = np.random.uniform(0, 1, (input_size, output_size))
-        self.biases = np.random.uniform(0, 1, output_size)
-        self.epoch_size = 512
+        self.weights            =   np.random.uniform(0, 1, (input_size, output_size))
+        self.biases             =   np.random.uniform(0, 1, output_size)
+        self.epoch_size         =   512
+        self.lr                 =   0.001
         
-        self.data_loader = DataLoader(self.epoch_size, shuffle=True)
-        self.encoder = FlattenEncoder()
-        self.optimizer = AdamOptimizer((input_size, output_size))
+        self.data_loader        =   DataLoader(self.epoch_size, shuffle=True)
+        self.encoder            =   FlattenEncoder()
+        self.optimizer          =   AdamOptimizer((input_size, output_size))
         
-        self.val_accuracies = []
-        self.accuracies = []
+        self.val_accuracies     =   []
+        self.accuracies         =   []
 
     def forward(self, inputs):
         return np.dot(inputs, self.weights) + self.biases
@@ -61,7 +62,7 @@ class Perceptron:
             gradient_weights, gradient_biases = self.backward(inputs, outputs, targets)
             
             # step = self.optimizer.step(gradient_weights)
-            step = gradient_weights * 0.01
+            step = self.lr * gradient_weights
             self.update_weights(step, gradient_biases, 1)
                 
             outputs = self.forward(inputs)

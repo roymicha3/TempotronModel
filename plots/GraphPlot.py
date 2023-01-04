@@ -9,6 +9,8 @@ from models.Tempotron import SimpleTempotron
 from models.Perceptron import Perceptron
 from tools.Tracker import Tracker
 
+from tools.Tools import smooth
+
 class GraphPlot:
     
     def __init__(self, T = 500, time_step= 0.1, epoch_size = 64, num_of_input_neurons = 784) -> None:
@@ -138,19 +140,28 @@ class GraphPlot:
     def plot_perceptron_tempotron_comparison(self):
         
         tau = 2.164
-        max_iterations = 1500
+        max_iterations = 2000
         presynaptic_num = 784
 
-        tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T)
+        tempotron_model = SimpleTempotron(presynaptic_num ,tau = tau, T= self.T, tag=1)
+        tempotron_model.load()
         perceptron_model = Perceptron(784, 10)
         
-        tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=True)
+        # tempotron_model.train_and_validate(max_iterations = max_iterations, save_progress=True)
         
         perceptron_model.train(max_iterations = max_iterations)
         
         plt.figure("num of iterations validation - Perceptron vs Tempotron")
         plt.xlabel("num of iterations")
         plt.ylabel("accuracy")
+        
+        # smoothed_results = np.zeros((len(perceptron_model.val_accuracies)))
+        # for i in range(1, 301):
+        #     smoothed_results[i - 1] = np.max(perceptron_model.val_accuracies[: i])
+            
+        # for i in range(300, len(perceptron_model.val_accuracies)):
+        #     smoothed_results[i] = 1.1 * np.mean(perceptron_model.val_accuracies[250:i + 1])
+        # smoothed_results = smooth(smoothed_results, 5)
         plt.plot(range(len(perceptron_model.val_accuracies)), perceptron_model.val_accuracies, label="perceptron accuracy")
         plt.plot(range(len(tempotron_model.val_accuracies)), tempotron_model.val_accuracies, label="temportron accuracy")
 

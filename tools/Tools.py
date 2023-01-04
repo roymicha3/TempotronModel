@@ -32,3 +32,8 @@ def get_conv_idx(matrix_shape: tuple, window: np.array):
 
 def get_non_zero_idx(data: np.array):
     return np.nonzero(data).T
+
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
